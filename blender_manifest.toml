@@ -1,0 +1,23 @@
+schema_version = "1.0.0"
+id = "projlayer"
+version = "0.1.0"
+name = "Projection Layers"
+tagline = "Paint with AI: position the camera, generate, and stack the result as a projection layer"
+maintainer = "ProjLayers"
+type = "add-on"
+
+blender_version_min = "5.1.0"
+website = ""
+
+tags = ["Texture", "Paint", "UV", "Material"]
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+platforms = ["windows-x64", "linux-x64", "macos-arm64"]
+
+# No wheels: the addon uses only stdlib + numpy/requests, both bundled with Blender.
+wheels = []
+
+[permissions]
+network = "Connects to a local ComfyUI server to generate textures"
+files = "Saves and loads generated textures"
