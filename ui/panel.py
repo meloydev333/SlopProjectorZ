@@ -139,6 +139,7 @@ class PL_PT_generate(bpy.types.Panel):
         row.prop(conf, "send_what", text="")
         row = box.row(align=True)
         row.prop(conf, "only_selected", text="Only This Object", toggle=True)
+        row.prop(conf, "hide_others", text="Hide Others", toggle=True)
 
         # â”€â”€ views: generate the same prompt from several cameras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         views = layout.box()

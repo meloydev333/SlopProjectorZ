@@ -1581,11 +1581,12 @@ class PL_OT_flatten(bpy.types.Operator):
             return _fail(self, context, "There is nothing to flatten.")
 
         total = len(colour) + len(normals)
-        done = [0]
 
-        def step(_index, _count, kind):
-            done[0] += 1
-            _bake_progress(context, f"Baking {kind}  {done[0]}/{total}")
+        def step(index, count, kind):
+            # Native per-object baking reports (object index, object count,
+            # object name); the numpy fallback reports (layer index, layer
+            # count, "colour" / "normals"). Show whichever arrives.
+            _bake_progress(context, f"Baking {kind}  {index}/{count}")
 
         try:
             colour_result = (pipeline.flatten_color_stack(

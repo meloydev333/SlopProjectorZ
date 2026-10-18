@@ -256,7 +256,7 @@ class PL_Layer(bpy.types.PropertyGroup):
 
     #: Object pass index this layer is confined to; 0 means every object sharing
     #: the material (the default, which lets a projection bleed).
-    owner_pass: IntProperty(name="Owner Index", default=0, min=0)
+    owner_id: FloatProperty(name="Owner ID", default=0.0, min=0.0, max=1.0)
 
     role: EnumProperty(name="Role", items=ROLE_ITEMS, default="LAYER")
 
@@ -441,6 +441,15 @@ class PL_Settings(bpy.types.PropertyGroup):
         description=(
             "Apply the generation only to the active object. Other meshes "
             "sharing the material are gated off by object index"
+        ),
+    )
+
+    #: Show ONLY the active object in the reference render.
+    hide_others: BoolProperty(
+        name="Hide Other Objects", default=False,
+        description=(
+            "Render only the active object, hiding everything else. Useful when "
+            "surrounding geometry would occlude or clutter the projection"
         ),
     )
 

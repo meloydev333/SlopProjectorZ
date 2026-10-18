@@ -1,14 +1,14 @@
-"""Capturing the maps that go to ComfyUI, and snapshotting the projection.
+﻿"""Capturing the maps that go to ComfyUI, and snapshotting the projection.
 
 Everything the backend receives is a plain render:
 
-  beauty      Workbench studio render       — the img2img reference
-  depth       Cycles/EEVEE emission render  — camera-space Z, normalised
-  normal      Cycles/EEVEE emission render  — camera-space normal
-  visibility  Cycles emission render        — 1 - occluded, times angle falloff
+  beauty      Workbench studio render       Ă˘â‚¬â€ť the img2img reference
+  depth       Cycles/EEVEE emission render  Ă˘â‚¬â€ť camera-space Z, normalised
+  normal      Cycles/EEVEE emission render  Ă˘â‚¬â€ť camera-space normal
+  visibility  Cycles emission render        Ă˘â‚¬â€ť 1 - occluded, times angle falloff
 
 Rendering rather than baking is deliberate. A render resolves occlusion with the
-z-buffer for free, and — crucially — the projection UV produced by a UV_PROJECT
+z-buffer for free, and Ă˘â‚¬â€ť crucially Ă˘â‚¬â€ť the projection UV produced by a UV_PROJECT
 modifier *is* screen space, so a screen-space render is already in the right
 coordinate space to be sampled through that UV map. Baking these through an
 overlapping projection UV would let back faces fight front faces for the same
@@ -39,12 +39,12 @@ UV_ATTR_PREFIX = "PL_ProjUV_"
 BACKDROP = (0.35, 0.35, 0.35)
 
 # Guide maps and masks are data. Any world would show up as a non-zero
-# background in them — which is exactly what made the mask look "shaded" and fed
+# background in them Ă˘â‚¬â€ť which is exactly what made the mask look "shaded" and fed
 # ControlNet a grey backdrop.
 BLACK_WORLD = (0.0, 0.0, 0.0)
 
 
-# ── camera ───────────────────────────────────────────────────────────────────
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ camera Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
 
 
 def ensure_camera(context):
@@ -113,7 +113,7 @@ def snap_to_view(context, camera):
                 bpy.ops.view3d.camera_to_view()
             _restore_perspective(region_3d, was_perspective)
             return camera
-        except Exception:  # noqa: BLE001 — fall back to copying the matrix
+        except Exception:  # noqa: BLE001 Ă˘â‚¬â€ť fall back to copying the matrix
             pass
 
     camera.matrix_world = region_3d.view_matrix.inverted()
@@ -134,11 +134,11 @@ def _restore_perspective(region_3d, was_perspective):
         pass
 
 
-# ── projection snapshot ──────────────────────────────────────────────────────
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ projection snapshot Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
 #
 # Blender silently caps UV layers at eight (asking for 40 creates 8, with no
 # error), so a UV map per layer cannot hold 30 projections. The projection is
-# stored as a FLOAT_VECTOR / CORNER attribute instead — attributes have no such
+# stored as a FLOAT_VECTOR / CORNER attribute instead Ă˘â‚¬â€ť attributes have no such
 # cap, and a corner FLOAT_VECTOR deliberately does NOT show up in the UV Maps
 # list (a FLOAT2 corner attribute would).
 #
@@ -311,13 +311,100 @@ def camera_basis(matrix):
     )
 
 
+def projection_is_valid(projection):
+    """False when no camera matrix was ever recorded.
+
+    An untouched ``cam_matrix`` is all zeros, which would invert to nonsense and
+    project every loop to the same point. Callers fall back to the stamped
+    attribute in that case.
+    """
+    try:
+        flat = []
+        for item in projection.cam_matrix:
+            try:
+                flat.extend(float(x) for x in item)
+            except TypeError:
+                flat.append(float(item))
+    except (AttributeError, TypeError):
+        return False
+    return len(flat) == 16 and any(abs(value) > 1e-9 for value in flat)
+
+
+def projection_half_extents(projection):
+    """Half the camera frame at unit depth, honouring sensor fit.
+
+    ``sensor_width`` is the physical film size, so a 50 mm lens on a 36 mm sensor
+    sees 18/50 of a unit at depth 1 across the fitted axis.
+    """
+    lens = max(float(projection.lens), 1e-6)
+    sensor = max(float(projection.sensor_width), 1e-6)
+    res_x = max(int(projection.res_x), 1)
+    res_y = max(int(projection.res_y), 1)
+    fit = str(projection.sensor_fit).upper()
+
+    portrait = fit == "VERTICAL" or (fit == "AUTO" and res_y > res_x)
+    if portrait:
+        half_y = (sensor * 0.5) / lens
+        half_x = half_y * (res_x / res_y)
+    else:
+        half_x = (sensor * 0.5) / lens
+        half_y = half_x * (res_y / res_x)
+    return half_x, half_y
+
+
+def project_loops_uv(obj, projection):
+    """Per-loop projection UVs, rebuilt from the stored camera.
+
+    This is the mapping UV_PROJECT produces, derived analytically from the camera
+    matrix plus lens/sensor, so a mesh needs no stamped attribute of its own.
+    That is what lets atlas flattening include meshes that were never projected.
+
+    Returns a ``(loops, 2)`` float array, or None when there is nothing to do.
+    """
+    mesh = obj.data
+    loops = len(mesh.loops)
+    if not loops or not projection_is_valid(projection):
+        return None
+
+    matrix = matrix_from_projection(projection)
+    inverse = np.array(matrix.inverted_safe(), dtype=np.float64)
+
+    loop_vertex = np.empty(loops, dtype=np.int32)
+    mesh.loops.foreach_get("vertex_index", loop_vertex)
+
+    count = len(mesh.vertices)
+    co = np.empty(count * 3, dtype=np.float64)
+    mesh.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+
+    world = np.array(obj.matrix_world, dtype=np.float64)
+    ones = np.ones((count, 1), dtype=np.float64)
+    world_points = (world @ np.hstack([co, ones]).T).T[:, :3]
+
+    camera_space = (inverse @ np.hstack([world_points, ones]).T).T[:, :3]
+
+    # The camera looks down -Z, so depth is positive in front of it.
+    depth = -camera_space[:, 2]
+    safe = np.where(np.abs(depth) < 1e-6, 1e-6, depth)
+
+    half_x, half_y = projection_half_extents(projection)
+    u = 0.5 + (camera_space[:, 0] / safe) / (2.0 * half_x) + float(projection.shift_x)
+    v = 0.5 + (camera_space[:, 1] / safe) / (2.0 * half_y) + float(projection.shift_y)
+
+    uvs = np.empty((loops, 2), dtype=np.float64)
+    uvs[:, 0] = u[loop_vertex]
+    uvs[:, 1] = v[loop_vertex]
+    return uvs
+
+
+
 def projection_resolution(context, camera):
     from ..props import resolution
 
     return resolution(context)
 
 
-# ── render plumbing ──────────────────────────────────────────────────────────
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ render plumbing Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
 
 
 class _RenderState:
@@ -395,7 +482,7 @@ class _RenderState:
             pass
 
 
-# ── temp material helpers ────────────────────────────────────────────────────
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ temp material helpers Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
 
 
 class _TempMaterial:
@@ -507,7 +594,7 @@ def _object_depth_range(obj, camera):
     return near, far
 
 
-# ── the passes ───────────────────────────────────────────────────────────────
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ the passes Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
 
 
 class _TempWorld:
@@ -600,12 +687,12 @@ def respect_viewport_visibility(context):
     Both flags have to be checked. They are different properties, and neither
     implies the other:
 
-    * ``hide_viewport`` — the outliner eye icon. ``hide_get()`` returns **False**
+    * ``hide_viewport`` Ă˘â‚¬â€ť the outliner eye icon. ``hide_get()`` returns **False**
       for these, which is why an earlier version of this only caught the H key.
-    * ``hide_get()`` — the H key (temporary per-view-layer hide).
+    * ``hide_get()`` Ă˘â‚¬â€ť the H key (temporary per-view-layer hide).
     * plus any collection hidden by its own eye, which propagates to nothing.
 
-    Local View isolation is still not handled — that state lives on the 3D view,
+    Local View isolation is still not handled Ă˘â‚¬â€ť that state lives on the 3D view,
     not on the objects, so it cannot be read reliably from here.
     """
     changed = []
@@ -655,7 +742,7 @@ def only_visible(context, keep_obj):
     except AttributeError:
         scene_objects = []
     for obj in scene_objects:
-        if obj is keep_obj:
+        if keep_obj is not None and obj.as_pointer() == keep_obj.as_pointer():
             continue
         if getattr(obj, "type", "") in {"CAMERA", "LIGHT"}:
             continue
@@ -729,7 +816,7 @@ def render_beauty(context, obj, camera, width, height, filepath, backdrop=BACKDR
     layers projected from earlier angles appear in the reference and new
     generations stay consistent with them. Workbench cannot see node trees.
 
-    The scene's own world is left alone when it has one — the artist's lighting
+    The scene's own world is left alone when it has one Ă˘â‚¬â€ť the artist's lighting
     beats anything we would invent. Only an empty scene gets the neutral studio
     world, which also supplies the light (a dark backdrop would leave the mesh
     unlit and black).
@@ -831,7 +918,7 @@ def _occlusion_socket(nodes, links, camera, geom, x, y):
     """1 where the camera can see the fragment, 0 where something is in front.
 
     Deliberately *binary*. Angle cutoff and distance limits are NOT baked in
-    here — they are computed live in the material instead, so the mask image
+    here Ă˘â‚¬â€ť they are computed live in the material instead, so the mask image
     stays a clean black-and-white occlusion map and those two controls respond
     instantly instead of needing a re-render.
     """
@@ -867,7 +954,7 @@ def render_visibility(context, obj, camera, width, height, filepath):
     """Binary occlusion mask, in screen space.
 
     Because the layer's projection UV is screen space, this renders straight
-    into the coordinate space the mask needs — no bake, and occlusion resolves
+    into the coordinate space the mask needs Ă˘â‚¬â€ť no bake, and occlusion resolves
     through the z-buffer instead of fighting overlapping UVs. Angle cutoff and
     distance limiting happen live in the material instead of here.
     """
@@ -965,7 +1052,7 @@ def bake_projected_image(context, obj, screen_image, src_attr,
     bake.
 
     That matters. Baked directly, ``ShaderNodeRaycast`` reported *every* texel as
-    occluded — the same node chain renders correctly (mean 0.505 on the test
+    occluded Ă˘â‚¬â€ť the same node chain renders correctly (mean 0.505 on the test
     sphere) but comes out solid black under ``object.bake``. Rendering the
     visibility first and transferring it sidesteps the whole question, and is
     faster because the bake no longer casts a ray per texel.
@@ -1006,7 +1093,7 @@ def bake_projected_image(context, obj, screen_image, src_attr,
             obj.data.uv_layers.active = obj.data.uv_layers[uv_name]
         _configure_cycles(context)
         # Persistent data caches the scene between renders, and with it on the
-        # bake silently wrote an all-black image — the temp material's shader
+        # bake silently wrote an all-black image Ă˘â‚¬â€ť the temp material's shader
         # never reached the bake. The guide renders like it; the bake cannot.
         if hasattr(scene.render, "use_persistent_data"):
             scene.render.use_persistent_data = False
@@ -1017,7 +1104,7 @@ def bake_projected_image(context, obj, screen_image, src_attr,
             target.image = target_image
             nodes.active = target
             for node in nodes:
-                node.select = node is target
+                node.select = node.as_pointer() == target.as_pointer()
             bpy.ops.object.bake(type="EMIT",
                                 width=target_image.size[0],
                                 height=target_image.size[1])
@@ -1042,19 +1129,218 @@ def bake_projected_image(context, obj, screen_image, src_attr,
                 pass
 
 
-def transfer_projection_to_uv(obj, screen, src_attr, uv_name, size, camera=None):
+#: Cached, layer-independent rasterisation state. A flatten calls the transfer
+#: once per (mesh, layer), and almost all of the work - destination UVs, bounding
+#: boxes, barycentric weights, destination texel indices - depends only on the
+#: mesh's UVs and the canvas size. Building it once per mesh removes the
+#: dominant term from the per-layer cost.
+_RASTER_CACHE = {}
+_RASTER_CACHE_ENTRIES = 2  # fewer entries so the raised budget cannot compound
+#: Upper bound on cached fill texels. A cached texel costs 32 bytes (three
+#: float64 weights + two int32 index arrays), so this caps the cache near 48 MB.
+_RASTER_BUDGET_TEXELS = 8_000_000  # ~288 MB per mesh worst case at 36 bytes/texel
+
+
+class _MeshRaster:
+    """Everything about the transfer that does not vary with the layer."""
+
+    __slots__ = ("keep", "min_x", "max_x", "min_y", "max_y", "denom", "dest",
+                 "world_centre", "world_normal", "order", "texels", "bytes",
+                 "assign_dest", "assign_tri",
+                 "assign_w0", "assign_w1", "assign_w2")
+
+
+def _raster_key(obj, uv_name, size, screen_shape, uv_bytes, tri_bytes):
+    """Key on everything that changes the result, including the UV data itself.
+
+    A stale cache would bake the wrong texture silently, which is worse than
+    being slow - so the raw UV and triangle bytes are hashed rather than trusting
+    mesh name or counts, which do not change when the artist edits UVs in place.
+    """
+    return (obj.data.as_pointer(), uv_name, int(size), int(screen_shape[0]),
+            int(screen_shape[1]), hash(uv_bytes), hash(tri_bytes))
+
+
+def _raster_for(obj, mesh, uv_layer, uv_buf, tri_loops, count, size,
+                screen_shape):
+    key = _raster_key(obj, uv_layer.name, size, screen_shape,
+                      uv_buf.tobytes(), tri_loops.tobytes())
+    raster = _RASTER_CACHE.get(key)
+    if raster is None:
+        raster = _build_raster(obj, mesh, uv_buf, tri_loops, count, size)
+        if len(_RASTER_CACHE) >= _RASTER_CACHE_ENTRIES:
+            _RASTER_CACHE.clear()
+        _RASTER_CACHE[key] = raster
+    return raster
+
+
+def _build_raster(obj, mesh, uv_buf, tri_loops, count, size):
+    """Compute the layer-independent half of the transfer for one mesh."""
+    raster = _MeshRaster()
+    dest = uv_buf.reshape(-1, 2)[tri_loops.reshape(-1, 3)] * size
+
+    xs = dest[:, :, 0]
+    ys = dest[:, :, 1]
+    x0, x1, x2 = xs[:, 0], xs[:, 1], xs[:, 2]
+    y0, y1, y2 = ys[:, 0], ys[:, 1], ys[:, 2]
+
+    raster.dest = dest
+    raster.min_x = np.maximum(0.0, np.floor(xs.min(axis=1)))
+    raster.max_x = np.minimum(size - 1.0, np.ceil(xs.max(axis=1)))
+    raster.min_y = np.maximum(0.0, np.floor(ys.min(axis=1)))
+    raster.max_y = np.minimum(size - 1.0, np.ceil(ys.max(axis=1)))
+    raster.denom = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2)
+
+    keep = (raster.max_x >= raster.min_x) & (raster.max_y >= raster.min_y)
+    keep &= np.abs(raster.denom) >= 1e-12
+    raster.keep = keep
+
+    # World centres and normals for the per-layer facing test. loop_triangles
+    # expose neither to foreach_get, so both come from the corner vertices; the
+    # cross product's direction matches the winding normal, which is all the
+    # facing test needs.
+    tri_verts = np.empty(count * 3, dtype=np.int32)
+    mesh.loop_triangles.foreach_get("vertices", tri_verts)
+    tri_verts = tri_verts.reshape(-1, 3)
+    coords = np.empty(len(mesh.vertices) * 3, dtype=np.float64)
+    mesh.vertices.foreach_get("co", coords)
+    coords = coords.reshape(-1, 3)
+
+    v0 = coords[tri_verts[:, 0]]
+    v1 = coords[tri_verts[:, 1]]
+    v2 = coords[tri_verts[:, 2]]
+    centres = (v0 + v1 + v2) / 3.0
+    normals = np.cross(v1 - v0, v2 - v0)
+
+    matrix = obj.matrix_world
+    rotation = np.array(matrix.to_3x3(), dtype=np.float64)
+    raster.world_centre = centres @ rotation.T + np.array(matrix.translation)
+    raster.world_normal = normals @ rotation.T
+
+    raster.order = np.nonzero(keep)[0]
+    raster.assign_dest = None
+    raster.assign_tri = None
+    raster.assign_w0 = None
+    raster.assign_w1 = None
+    raster.assign_w2 = None
+    raster.texels = 0
+
+    if raster.order.size:
+        areas = ((raster.max_x - raster.min_x + 1.0)
+                 * (raster.max_y - raster.min_y + 1.0))
+        total = float(areas[keep].sum())
+    else:
+        total = 0.0
+
+    # Below the budget, precompute every triangle's covered texels and their
+    # barycentric weights. Above it, leave fills unset and let the caller take
+    # the old per-triangle path: recomputing is slow, a stale or blown-up cache
+    # is worse.
+    if 0.0 < total <= _RASTER_BUDGET_TEXELS:
+        selected = raster.order
+        widths = (raster.max_x[selected] - raster.min_x[selected] + 1.0).astype(np.int64)
+        heights = (raster.max_y[selected] - raster.min_y[selected] + 1.0).astype(np.int64)
+        counts = widths * heights
+
+        # Expand every triangle's bounding box in a few whole-array operations
+        # instead of a Python loop per triangle. The loop was the same
+        # tiny-array numpy overhead that dominated the old per-layer rasteriser,
+        # just moved into the cache build - so it had to go too.
+        parts_w0, parts_w1, parts_w2, parts_tri, parts_dest = [], [], [], [], []
+        block = 0
+        while block < selected.size:
+            # Take as many triangles as fit the transient budget in one go.
+            running = np.cumsum(counts[block:])
+            take = int(np.searchsorted(running, _RASTER_BUDGET_TEXELS, side="right"))
+            take = max(1, min(take, selected.size - block))
+            chunk = slice(block, block + take)
+            block += take
+
+            chunk_counts = counts[chunk]
+            grand = int(chunk_counts.sum())
+            if grand <= 0:
+                continue
+
+            ids = np.repeat(selected[chunk], chunk_counts)
+            width_rep = np.repeat(widths[chunk], chunk_counts)
+            starts = np.cumsum(chunk_counts) - chunk_counts
+            local = np.arange(grand, dtype=np.int64) - np.repeat(starts, chunk_counts)
+            dx = local % width_rep
+            dy = local // width_rep
+            lo_x_rep = np.repeat(raster.min_x[selected[chunk]], chunk_counts)
+            lo_y_rep = np.repeat(raster.min_y[selected[chunk]], chunk_counts)
+            texel_x = lo_x_rep + dx + 0.5
+            texel_y = lo_y_rep + dy + 0.5
+
+            p0 = dest[ids, 0]
+            p1 = dest[ids, 1]
+            p2 = dest[ids, 2]
+            d = raster.denom[ids]
+
+            w0 = ((p1[:, 1] - p2[:, 1]) * (texel_x - p2[:, 0])
+                  + (p2[:, 0] - p1[:, 0]) * (texel_y - p2[:, 1])) / d
+            w1 = ((p2[:, 1] - p0[:, 1]) * (texel_x - p2[:, 0])
+                  + (p0[:, 0] - p2[:, 0]) * (texel_y - p2[:, 1])) / d
+            w2 = 1.0 - w0 - w1
+            inside = (w0 >= -1e-6) & (w1 >= -1e-6) & (w2 >= -1e-6)
+            if not inside.any():
+                continue
+
+            parts_w0.append(w0[inside])
+            parts_w1.append(w1[inside])
+            parts_w2.append(w2[inside])
+            parts_tri.append(ids[inside])
+            # Integer texel coordinates: the bounding boxes are float, and a
+            # float index would not be usable downstream.
+            dest_rows = (lo_y_rep[inside] + dy[inside]).astype(np.int64)
+            dest_cols = (lo_x_rep[inside] + dx[inside]).astype(np.int64)
+            parts_dest.append(dest_rows * size + dest_cols)
+
+        if parts_dest:
+            weights0 = np.concatenate(parts_w0)
+            weights1 = np.concatenate(parts_w1)
+            weights2 = np.concatenate(parts_w2)
+            texel_tri = np.concatenate(parts_tri)
+            texel_dest = np.concatenate(parts_dest)
+
+            # Sort by destination once. Within a destination the stable order is
+            # ascending triangle, which is exactly the "last triangle wins" rule
+            # the per-triangle loop had - so the winner can be picked
+            # arithmetically instead of by writing every triangle in turn.
+            order = np.argsort(texel_dest, kind="stable")
+            raster.assign_dest = texel_dest[order]
+            raster.assign_tri = texel_tri[order]
+            raster.assign_w0 = weights0[order]
+            raster.assign_w1 = weights1[order]
+            raster.assign_w2 = weights2[order]
+            raster.texels = int(texel_dest.size)
+            del weights0, weights1, weights2, texel_tri, texel_dest
+
+    raster.bytes = int(48 * count + raster.texels * 36)
+    return raster
+
+
+def transfer_projection_to_uv(obj, screen, src_attr, uv_name, size, camera=None,
+                              proj_uv=None, eye=None):
     """Resample a screen-space image into the mesh's own UV layout.
 
-    ``camera`` enables back-face culling, which matters: a sphere's far side
-    projects onto the *same* screen pixels as its near side, so without culling
-    it copies the near side's "visible" value and the mask leaks over the whole
-    hidden half. That showed up as ~94% white for a single front view, where
-    roughly half is the honest answer.
+    ``proj_uv`` supplies the screen coordinates directly, as a ``(loops, 2)``
+    array. When it is given, ``src_attr`` is ignored and the mesh needs no
+    stamped projection attribute - which is what lets atlas flattening include
+    meshes that were never projected from that camera. Otherwise the coordinates
+    are read from the named corner attribute, as before.
+
+    ``camera``/``eye`` enable back-face culling, which matters: a sphere's far
+    side projects onto the *same* screen pixels as its near side, so without
+    culling it copies the near side's "visible" value and the mask leaks over
+    the whole hidden half. That showed up as ~94% white for a single front view,
+    where roughly half is the honest answer. ``eye`` is a world position, for
+    callers that have a camera matrix but no camera object.
 
     A small software rasteriser rather than a Cycles bake. ``object.bake`` was
-    tried three ways here and wrote an all-black image every time — constant
+    tried three ways here and wrote an all-black image every time Ă˘â‚¬â€ť constant
     emission, texture through a UV map, texture through a projection attribute,
-    with and without persistent data — while the identical node chain renders
+    with and without persistent data Ă˘â‚¬â€ť while the identical node chain renders
     correctly. Rather than keep chasing it, this does the transfer directly.
 
     Each triangle carries two coordinate sets: its object-space UV (from the
@@ -1066,54 +1352,113 @@ def transfer_projection_to_uv(obj, screen, src_attr, uv_name, size, camera=None)
     """
     mesh = obj.data
     uv_layer = mesh.uv_layers.get(uv_name)
-    attr = mesh.attributes.get(src_attr)
-    if uv_layer is None or attr is None:
+    if uv_layer is None:
         return None
 
-    loops = len(mesh.loops)
-    uv_buf = np.empty(loops * 2, dtype=np.float64)
-    uv_layer.data.foreach_get("uv", uv_buf)
-    obj_uv = uv_buf.reshape(-1, 2)
+    if proj_uv is None:
+        attr = mesh.attributes.get(src_attr)
+        if attr is None:
+            return None
 
-    vec_buf = np.empty(loops * 3, dtype=np.float64)
-    attr.data.foreach_get("vector", vec_buf)
-    proj_uv = vec_buf.reshape(-1, 3)[:, :2]
+    loops = len(mesh.loops)
+    triangles = mesh.loop_triangles
+    count = len(triangles)
 
     screen_h, screen_w = screen.shape[:2]
     out = np.zeros((size, size) + screen.shape[2:], dtype=np.float32)
+    if not count:
+        return out
 
-    matrix = obj.matrix_world
-    normal_matrix = matrix.to_3x3()
-    eye = camera.matrix_world.translation if camera is not None else None
+    if eye is None and camera is not None:
+        eye = camera.matrix_world.translation
 
-    for tri in mesh.loop_triangles:
-        if eye is not None:
-            world_centre = matrix @ tri.center
-            world_normal = normal_matrix @ tri.normal
-            if world_normal.dot(eye - world_centre) <= 0.0:
-                continue  # faces away from the camera, so it cannot be seen
-        idx = tri.loops
-        p = obj_uv[idx] * size
-        s = proj_uv[idx] * (screen_w, screen_h)
+    uv_buf = np.empty(loops * 2, dtype=np.float64)
+    uv_layer.data.foreach_get("uv", uv_buf)
 
-        x0, x1, x2 = p[0, 0], p[1, 0], p[2, 0]
-        y0, y1, y2 = p[0, 1], p[1, 1], p[2, 1]
+    tri_loops = np.empty(count * 3, dtype=np.int32)
+    triangles.foreach_get("loops", tri_loops)
 
-        min_x = max(0, int(np.floor(min(x0, x1, x2))))
-        max_x = min(size - 1, int(np.ceil(max(x0, x1, x2))))
-        min_y = max(0, int(np.floor(min(y0, y1, y2))))
-        max_y = min(size - 1, int(np.ceil(max(y0, y1, y2))))
-        if max_x < min_x or max_y < min_y:
-            continue
+    # Layer-independent state, built once per mesh and reused for every layer.
+    raster = _raster_for(obj, mesh, uv_layer, uv_buf, tri_loops, count, size,
+                         screen.shape)
+    tri_loops = tri_loops.reshape(-1, 3)
 
-        denom = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2)
-        if abs(denom) < 1e-12:
-            continue
+    if proj_uv is None:
+        vec_buf = np.empty(loops * 3, dtype=np.float64)
+        attr.data.foreach_get("vector", vec_buf)
+        proj_uv = vec_buf.reshape(-1, 3)[:, :2]
 
-        gx, gy = np.meshgrid(np.arange(min_x, max_x + 1) + 0.5,
-                             np.arange(min_y, max_y + 1) + 0.5)
-        w0 = ((y1 - y2) * (gx - x2) + (x2 - x1) * (gy - y2)) / denom
-        w1 = ((y2 - y0) * (gx - x2) + (x0 - x2) * (gy - y2)) / denom
+    src = proj_uv[tri_loops] * (screen_w, screen_h)      # (T, 3, 2) screen px
+
+    facing = None
+    if eye is not None:
+        # Row-wise dot, exactly as before: einsum sums in a fixed order, so the
+        # facing test stays bit-identical to the pre-cache implementation.
+        facing = np.einsum("ij,ij->i", raster.world_normal,
+                           np.asarray(eye, dtype=np.float64) - raster.world_centre)
+
+    if raster.assign_dest is not None:
+        # Fast path. Everything geometric was computed and sorted once per mesh,
+        # so a layer is now a handful of whole-array operations rather than a
+        # Python loop over every triangle - which is what actually dominated.
+        if facing is not None:
+            positions = np.nonzero(facing[raster.assign_tri] > 0.0)[0]
+        else:
+            positions = np.arange(raster.assign_dest.size)
+        if positions.size == 0:
+            return out
+
+        destination = raster.assign_dest[positions]
+
+        # Keep only the last writer per destination texel, in ascending triangle
+        # order, reproducing the original "last triangle wins" exactly.
+        tail = np.empty(positions.size, dtype=bool)
+        tail[:-1] = destination[1:] != destination[:-1]
+        tail[-1] = True
+        winners = positions[tail]
+
+        triangle_ids = raster.assign_tri[winners]
+        corners = src[triangle_ids]                     # (m, 3, 2)
+        sx = (raster.assign_w0[winners] * corners[:, 0, 0]
+              + raster.assign_w1[winners] * corners[:, 1, 0]
+              + raster.assign_w2[winners] * corners[:, 2, 0])
+        sy = (raster.assign_w0[winners] * corners[:, 0, 1]
+              + raster.assign_w1[winners] * corners[:, 1, 1]
+              + raster.assign_w2[winners] * corners[:, 2, 1])
+
+        sampled = screen[np.clip(sy.astype(np.int32), 0, screen_h - 1),
+                         np.clip(sx.astype(np.int32), 0, screen_w - 1)]
+        # out may carry more than one channel (RGB + alpha travel together in the
+        # flatten), so assign whole rows; a single-channel target stays 1-D.
+        target = out.reshape(size * size, -1) if out.ndim > 2 else out.reshape(-1)
+        target[raster.assign_dest[winners]] = sampled
+        return out
+
+    # Fallback for meshes too dense to cache: same arithmetic as before, done
+    # per layer. Recomputation is slower, but a cache that silently goes stale
+    # or exhausts memory would be worse.
+    ramp = np.arange(size, dtype=np.float64) + 0.5
+    keep = raster.keep
+    if facing is not None:
+        keep = keep & (facing > 0.0)
+
+    for index in np.nonzero(keep)[0]:
+        p = raster.dest[index]
+        s = src[index]
+        d = raster.denom[index]
+
+        lo_x = int(raster.min_x[index])
+        hi_x = int(raster.max_x[index])
+        lo_y = int(raster.min_y[index])
+        hi_y = int(raster.max_y[index])
+
+        dx = ramp[lo_x:hi_x + 1] - p[2, 0]      # (w,)
+        dy = ramp[lo_y:hi_y + 1] - p[2, 1]      # (h,)
+        px0, py0 = p[0]
+        px1, py1 = p[1]
+
+        w0 = ((py1 - p[2, 1]) * dx[None, :] + (p[2, 0] - px1) * dy[:, None]) / d
+        w1 = ((p[2, 1] - py0) * dx[None, :] + (px0 - p[2, 0]) * dy[:, None]) / d
         w2 = 1.0 - w0 - w1
         inside = (w0 >= -1e-6) & (w1 >= -1e-6) & (w2 >= -1e-6)
         if not inside.any():
@@ -1121,10 +1466,11 @@ def transfer_projection_to_uv(obj, screen, src_attr, uv_name, size, camera=None)
 
         sx = w0 * s[0, 0] + w1 * s[1, 0] + w2 * s[2, 0]
         sy = w0 * s[0, 1] + w1 * s[1, 1] + w2 * s[2, 1]
-        px = np.clip(sx.astype(np.int32), 0, screen_w - 1)
-        py = np.clip(sy.astype(np.int32), 0, screen_h - 1)
-        out[gy[inside].astype(np.int32), gx[inside].astype(np.int32)] = \
-            screen[py, px][inside]
+        sampled = screen[np.clip(sy.astype(np.int32), 0, screen_h - 1),
+                         np.clip(sx.astype(np.int32), 0, screen_w - 1)]
+
+        rows, cols = np.nonzero(inside)
+        out[rows + lo_y, cols + lo_x] = sampled[rows, cols]
 
     return out
 
@@ -1229,7 +1575,7 @@ def _render_to_file(context, filepath):
     return matches[-1]
 
 
-# ── mask post-processing ─────────────────────────────────────────────────────
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ mask post-processing Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
 
 
 def load_gray(path):
@@ -1339,7 +1685,7 @@ def feather_mask(array, pixels):
 
 
 def _box_blur(array, radius):
-    """Separable box blur via cumulative sums — fast and dependency-free."""
+    """Separable box blur via cumulative sums Ă˘â‚¬â€ť fast and dependency-free."""
     if radius < 1:
         return array
 

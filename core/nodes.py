@@ -1,16 +1,16 @@
-"""Builds the layer stack into the object's material node tree.
+﻿"""Builds the layer stack into the object's material node tree.
 
 The material tree stays readable no matter how many layers you have: everything
 the add-on builds lives inside a single **mother group** (``PL_Stack``) wired to
 the Principled BSDF, and inside that group each layer is its own small group
-(``PL_LayerColor_0``, ``PL_LayerNormal_0``, …) chained one into the next.
+(``PL_LayerColor_0``, ``PL_LayerNormal_0``, â€¦) chained one into the next.
 
     material tree            PL_Stack group
-    ┌────────────────┐       ┌──────────────────────────────────────┐
-    │ [PL_Stack]─────┼──Color┤ BaseColor →[L0]→[L1]→[L2]──────→ Color│
-    │      │         │       │                                      │
-    │  Principled    │Normal │ BaseNormal→[N0]→[N1]─────────→ Normal │
-    └────────────────┘       └──────────────────────────────────────┘
+    â”Śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”       â”Śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+    â”‚ [PL_Stack]â”€â”€â”€â”€â”€â”Ľâ”€â”€Colorâ”¤ BaseColor â†’[L0]â†’[L1]â†’[L2]â”€â”€â”€â”€â”€â”€â†’ Colorâ”‚
+    â”‚      â”‚         â”‚       â”‚                                      â”‚
+    â”‚  Principled    â”‚Normal â”‚ BaseNormalâ†’[N0]â†’[N1]â”€â”€â”€â”€â”€â”€â”€â”€â”€â†’ Normal â”‚
+    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
 
 Chain order is bottom-to-top: ``color_layers[0]`` is the bottom layer.
 
@@ -46,7 +46,7 @@ FLAT_NORMAL = (0.5, 0.5, 1.0)
 _KEEP_IN_GROUP = {"NodeGroupInput", "NodeGroupOutput"}
 
 
-# ── socket helpers ───────────────────────────────────────────────────────────
+# â”€â”€ socket helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _socket(collection, identifier):
     """Look a socket up by identifier (names are ambiguous on ShaderNodeMix)."""
@@ -69,7 +69,7 @@ def _break(links, socket):
         links.remove(link)
 
 
-# ── material-tree plumbing ───────────────────────────────────────────────────
+# â”€â”€ material-tree plumbing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def find_output(material):
     for node in material.node_tree.nodes:
@@ -92,7 +92,7 @@ def clear(material):
     """Remove every node and node group this add-on created.
 
     ``PL_PaintTarget`` is spared on purpose. It is the node Blender paints into,
-    and the debounced rebuild fires shortly *after* entering paint mode — wiping
+    and the debounced rebuild fires shortly *after* entering paint mode â€” wiping
     it there would silently break painting.
     """
     if material is not None and material.use_nodes and material.node_tree is not None:
@@ -158,7 +158,7 @@ def _ensure_scaffold(material):
     return output, bsdf
 
 
-# ── node factories ───────────────────────────────────────────────────────────
+# â”€â”€ node factories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _node(nodes, kind, name, location):
     node = nodes.new(kind)
@@ -192,7 +192,7 @@ def _const_vector(nodes, name, vector, x, y):
     return node
 
 
-# ── node groups ──────────────────────────────────────────────────────────────
+# â”€â”€ node groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _reset_group(name, inputs, outputs):
     """Get (or create) a shader node group and wipe its innards.
@@ -241,7 +241,7 @@ def _group_io(group):
     return gi, go
 
 
-# ── per-layer groups ─────────────────────────────────────────────────────────
+# â”€â”€ per-layer groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _uv_source(nodes, links, layer, tag, x, y):
     """Where this layer's textures get their coordinates from.
@@ -385,6 +385,18 @@ def _is_neutral_hsv(layer) -> bool:
     )
 
 
+#: Object Info makes EEVEE Next fail to compile the material inside a nested
+#: group, which renders the whole object magenta. Cycles is fine with it. The
+#: gate is therefore switched off when EEVEE is the active engine, so a confined
+#: layer degrades to "applies everywhere" instead of painting the mesh pink.
+OWNER_GATE_ENABLED = True
+
+
+def owner_gate_allowed(engine):
+    """False for EEVEE, which cannot compile Object Info inside a nested group."""
+    return "EEVEE" not in str(engine or "").upper()
+
+
 def _owner_gate(nodes, links, layer, tag, socket, x, y):
     """Zero this layer out on objects it does not belong to.
 
@@ -393,17 +405,21 @@ def _owner_gate(nodes, links, layer, tag, socket, x, y):
     Object Index can tell them apart, so a layer flagged with an owner pass index
     is multiplied by (Object Index == owner) and disappears everywhere else.
     """
-    owner = int(getattr(layer, "owner_pass", 0) or 0)
-    if owner <= 0:
+    owner = float(getattr(layer, "owner_id", 0.0) or 0.0)
+    if owner <= 0.0 or not OWNER_GATE_ENABLED:
         return socket
 
-    info = _node(nodes, "ShaderNodeObjectInfo", f"{tag}_OwnerInfo", x, y)
-    compare = _math(nodes, f"{tag}_OwnerCmp", "COMPARE", (x + 140, y - 160))
-    links.new(info.outputs["Object Index"], compare.inputs[0])
-    compare.inputs[1].default_value = float(owner)
-    compare.inputs[2].default_value = 0.5  # integer comparison needs slack
+    # The object ALPHA channel, not its RGB. Object Index breaks EEVEE Next's
+    # shader compile inside a nested node group (Cycles tolerates it), and the
+    # RGB of Object Colour is the viewport object colour - so the id lives in
+    # alpha, which nothing visible uses and which stays engine-agnostic.
+    info = _node(nodes, "ShaderNodeObjectInfo", f"{tag}_OwnerInfo", (x, y))
+    compare = _math(nodes, f"{tag}_OwnerCmp", "COMPARE", (x + 170, y - 160))
+    links.new(info.outputs["Alpha"], compare.inputs[0])
+    compare.inputs[1].default_value = owner
+    compare.inputs[2].default_value = 0.004  # ids step by 0.01
 
-    gate = _math(nodes, f"{tag}_OwnerGate", "MULTIPLY", (x + 300, y - 160))
+    gate = _math(nodes, f"{tag}_OwnerGate", "MULTIPLY", (x + 470, y - 160))
     links.new(socket, gate.inputs[0])
     links.new(compare.outputs[0], gate.inputs[1])
     return gate.outputs[0]
@@ -689,15 +705,15 @@ def _rnm_group():
     return group
 
 
-# ── the mother group ─────────────────────────────────────────────────────────
+# â”€â”€ the mother group â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _build_stack(group, color_layers, normal_layers, normal_blend):
     nodes, links = group.nodes, group.links
     gi, go = _group_io(group)
 
-    # ── colour chain, bottom to top ──────────────────────────────────────────
+    # â”€â”€ colour chain, bottom to top â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # The pre-mask is a working overlay, not part of the artwork, so it is
-    # always composited last — otherwise every new projection would land on top
+    # always composited last â€” otherwise every new projection would land on top
     # of it and hide the red you are painting with.
     ordered = [l for l in color_layers if l.role == "LAYER"]
     ordered += [l for l in color_layers if l.role != "LAYER"]
@@ -718,7 +734,7 @@ def _build_stack(group, color_layers, normal_layers, normal_blend):
         cursor = node.outputs["Color"]
     links.new(cursor, go.inputs["Color"])
 
-    # ── normal chain, bottom to top ──────────────────────────────────────────
+    # â”€â”€ normal chain, bottom to top â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     cursor = gi.outputs["Base Normal"]
     for index, layer in enumerate(normal_layers):
         layer_group = _reset_group(
@@ -736,7 +752,7 @@ def _build_stack(group, color_layers, normal_layers, normal_blend):
     links.new(cursor, go.inputs["Normal"])
 
 
-# ── entry point ──────────────────────────────────────────────────────────────
+# â”€â”€ entry point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def rebuild(material, color_layers, normal_layers, normal_blend="WHITEOUT"):
     """Rebuild the whole add-on contribution into ``material``.

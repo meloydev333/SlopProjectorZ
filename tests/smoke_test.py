@@ -1,4 +1,4 @@
-﻿"""Smoke test + the one validation that matters: does the projection UV align
+"""Smoke test + the one validation that matters: does the projection UV align
 with the render, so a returned image can be sampled back onto the mesh?"""
 import sys, os, time, shutil
 import numpy as np
@@ -1634,5 +1634,184 @@ check("the payload records the original material",
 bpy.data.objects.remove(_cube, do_unlink=True)
 
 
+
+
+# -- reference render controls ---------------------------------------------
+check("hide-others and confine-to-object default off",
+      conf.hide_others is False and conf.only_selected is False,
+      f"hide_others={conf.hide_others} only_selected={conf.only_selected}")
+conf.hide_others = True
+_seen = pipeline.Payload()
+check("a payload can carry the batch isolation flag independently",
+      _seen.isolate is False and conf.hide_others is True)
+conf.hide_others = False
+check("turning them off leaves the render as it was",
+      conf.hide_others is False)
+
+
+# -- flatten bakes EVERY mesh sharing the material into the atlas ----------
+# Two meshes, one material, disjoint UV islands: A lives in x 0..0.5 and B in
+# x 0.5..1. Baking only the active object left B's half black, which is the bug
+# this reproduces.
+_ATLAS_UV = "UVMap"
+_atlas_mat = bpy.data.materials.new("PL_AtlasMat")
+_atlas_mat.use_nodes = True
+
+
+def _atlas_mesh(name, x_offset):
+    bpy.ops.mesh.primitive_cube_add(location=(0.0, 0.0, 0.0))
+    cube = bpy.context.active_object
+    cube.name = name
+    mesh = cube.data
+    for loop_uv in mesh.uv_layers.active.data:
+        loop_uv.uv.x = loop_uv.uv.x * 0.5 + x_offset
+    # A corner vector attribute standing in for the camera projection. Every
+    # corner samples the same texel, so the bake simply writes the source colour
+    # wherever the mesh owns UV space - enough to prove coverage.
+    attr = mesh.attributes.new("PL_ProjUV_atlas", "FLOAT_VECTOR", "CORNER")
+    for entry in attr.data:
+        entry.vector = (0.5, 0.5, 0.0)
+    mesh.materials.clear()
+    mesh.materials.append(_atlas_mat)
+    return cube
+
+
+_atlas_a = _atlas_mesh("PL_AtlasA", 0.0)
+_atlas_b = _atlas_mesh("PL_AtlasB", 0.5)
+
+_atlas_stack = pipeline.stack(bpy.context, create=True)
+_atlas_stack.color_layers.clear()
+_atlas_layer = _atlas_stack.color_layers.add()
+_atlas_layer.name = "Atlas"
+_atlas_layer.source_image = bpy.data.images.new("PL_atlas_src", 8, 8, alpha=True)
+_atlas_px = np.ones((8, 8, 4), dtype=np.float32)
+_atlas_px[:, :, 0] = 0.8
+_atlas_px[:, :, 1] = 0.4
+_atlas_px[:, :, 2] = 0.2
+_atlas_layer.source_image.pixels.foreach_set(_atlas_px.ravel())
+_atlas_layer.source_image.pack()
+_atlas_layer.uv_attr = "PL_ProjUV_atlas"
+_atlas_layer.opacity = 1.0
+
+check("both atlas meshes are discovered from the material",
+      len(pipeline.meshes_sharing_material(_atlas_mat)) == 2,
+      f"{[o.name for o in pipeline.meshes_sharing_material(_atlas_mat)]}")
+
+bpy.context.view_layer.objects.active = _atlas_a
+_atlas_a.select_set(True)
+_both = pipeline.flatten_color_stack(bpy.context, _atlas_a, 64, _ATLAS_UV)
+_both_left = float(_both[:, :32, :].max()) if _both is not None else 0.0
+_both_right = float(_both[:, 32:, :].max()) if _both is not None else 0.0
+check("flatten writes the active mesh's UV islands", _both_left > 0.1,
+      f"left max={_both_left:.2f}")
+check("flatten also writes the OTHER mesh sharing the atlas", _both_right > 0.1,
+      f"right max={_both_right:.2f} (was black before the fix)")
+
+# Control: with one mesh removed, the other half must go back to black - proving
+# the second half came from the second mesh and not from something else.
+bpy.data.objects.remove(_atlas_b, do_unlink=True)
+_single = pipeline.flatten_color_stack(bpy.context, _atlas_a, 64, _ATLAS_UV)
+_single_left = float(_single[:, :32, :].max()) if _single is not None else 0.0
+_single_right = float(_single[:, 32:, :].max()) if _single is not None else 0.0
+check("with one mesh only, the rest of the atlas stays black",
+      _single_left > 0.1 and _single_right < 0.1,
+      f"left={_single_left:.2f} right={_single_right:.2f}")
+
+_atlas_stack.color_layers.clear()
+bpy.data.objects.remove(_atlas_a, do_unlink=True)
+if _atlas_mat.name in bpy.data.materials:
+    bpy.data.materials.remove(_atlas_mat)
+
+# -- flatten must not depend on a stamped projection attribute --------------
+# B below has NO PL_ProjUV attribute at all. That is the real-world failure:
+# stamping silently skips meshes it cannot reach, which left most of an atlas
+# blank or mapped a stale projection over it. The projection is now re-derived
+# from the layer's stored camera, so B bakes correctly regardless.
+_AF_UV = "UVMap"
+_af_mat = bpy.data.materials.new("PL_AttrFreeMat")
+_af_mat.use_nodes = True
+
+
+def _af_mesh(name, x_offset):
+    bpy.ops.mesh.primitive_cube_add(location=(0.0, 0.0, 0.0))
+    cube = bpy.context.active_object
+    cube.name = name
+    for loop_uv in cube.data.uv_layers.active.data:
+        loop_uv.uv.x = loop_uv.uv.x * 0.5 + x_offset
+    cube.data.materials.clear()
+    cube.data.materials.append(_af_mat)
+    return cube
+
+
+_af_a = _af_mesh("PL_AttrFreeA", 0.0)
+_af_b = _af_mesh("PL_AttrFreeB", 0.5)
+
+_af_cam = bpy.data.objects.new("PL_AttrFreeCam", bpy.data.cameras.new("PL_AttrFreeCam"))
+bpy.context.scene.collection.objects.link(_af_cam)
+_af_cam.location = (0.0, -6.0, 0.0)
+_af_cam.rotation_euler = (1.5708, 0.0, 0.0)
+# matrix_world is only rebuilt by a dependency graph update, and _capture_projection
+# reads it directly. Without this the stored matrix is stale and the projection is
+# nonsense - in the real pipeline the renders have already forced an update.
+bpy.context.view_layer.update()
+
+_af_stack = pipeline.stack(bpy.context, create=True)
+_af_stack.color_layers.clear()
+_af_layer = _af_stack.color_layers.add()
+_af_layer.name = "AttrFree"
+_af_img = bpy.data.images.new("PL_af_src", 8, 8, alpha=True)
+_af_px = np.ones((8, 8, 4), dtype=np.float32)
+_af_px[:, :, 0] = 0.8
+_af_px[:, :, 1] = 0.4
+_af_px[:, :, 2] = 0.2
+_af_img.pixels.foreach_set(_af_px.ravel())
+_af_img.pack()
+_af_layer.source_image = _af_img
+_af_layer.opacity = 1.0
+
+_af_payload = pipeline.Payload()
+# Must match what snapshot_projection uses for its aspect, or the two mappings
+# disagree by the aspect ratio rather than by rounding.
+_af_res = R.projection_resolution(bpy.context, _af_cam)
+_af_payload.width, _af_payload.height = _af_res
+_af_payload.falloff = 1.0
+_af_payload.angle_cut = 0.0
+_af_payload.max_distance = 0.0
+pipeline._capture_projection(_af_layer.projection, _af_cam, _af_payload)
+check("the layer records a usable camera matrix",
+      R.projection_is_valid(_af_layer.projection))
+
+# Only A is stamped; B is left exactly as the real failure leaves it.
+bpy.context.view_layer.objects.active = _af_a
+_af_a.select_set(True)
+_af_attr = R.snapshot_projection(bpy.context, _af_a, _af_cam)
+_af_layer.uv_attr = _af_attr
+_af_b_attrs = [a.name for a in _af_b.data.attributes if a.name.startswith("PL_ProjUV")]
+check("the second mesh really has no projection attribute", _af_b_attrs == [],
+      f"{_af_b_attrs}")
+
+# The analytic mapping has to agree with what UV_PROJECT stamped.
+_af_buf = np.empty(len(_af_a.data.loops) * 3, dtype=np.float64)
+_af_a.data.attributes[_af_attr].data.foreach_get("vector", _af_buf)
+_af_expected = _af_buf.reshape(-1, 3)[:, :2]
+_af_got = R.project_loops_uv(_af_a, _af_layer.projection)
+_af_delta = float(np.abs(_af_got - _af_expected).max()) if _af_got is not None else 9.9
+check("the analytic projection matches the stamped one", _af_delta < 1e-3,
+      f"max delta {_af_delta:.2e}")
+
+_af = pipeline.flatten_color_stack(bpy.context, _af_a, 64, _AF_UV)
+_af_left = float(_af[:, :32, :].max()) if _af is not None else 0.0
+_af_right = float(_af[:, 32:, :].max()) if _af is not None else 0.0
+check("flatten bakes a mesh that has no stamped attribute", _af_right > 0.1,
+      f"right max={_af_right:.2f} (black before this change)")
+check("flatten still bakes the mesh that does have one", _af_left > 0.1,
+      f"left max={_af_left:.2f}")
+
+_af_stack.color_layers.clear()
+bpy.data.objects.remove(_af_a, do_unlink=True)
+bpy.data.objects.remove(_af_b, do_unlink=True)
+bpy.data.objects.remove(_af_cam, do_unlink=True)
+if _af_mat.name in bpy.data.materials:
+    bpy.data.materials.remove(_af_mat)
 
 print("\n" + ("ALL CHECKS PASSED" if not FAIL else f"{len(FAIL)} FAILED: {FAIL}"))
