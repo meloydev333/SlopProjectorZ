@@ -1029,7 +1029,13 @@ def _write_gray_into(image, array):
 
 
 def _drop_layer(context, layer):
-    """Remove one layer and the images it owns."""
+    """Remove one layer and the images it owns.
+
+    The fake user has to be cleared first. `_new_image` sets one so a generated
+    image survives a save/reload while its layer exists - but a fake user counts
+    as a user, so `users == 0` could never be true and dropped layers leaked
+    their images into the file forever.
+    """
     active = stack(context)
     ptr = layer.as_pointer()
     for coll in (active.color_layers, active.normal_layers):
@@ -1039,10 +1045,63 @@ def _drop_layer(context, layer):
             images = [candidate.source_image, candidate.mask_image]
             coll.remove(index)
             for image in images:
-                if image is not None and image.users == 0:
+                if image is None:
+                    continue
+                image.use_fake_user = False
+                if image.users == 0:
                     bpy.data.images.remove(image)
             return True
     return False
+
+
+def images_in_use():
+    """Every image datablock a layer currently points at, across all materials."""
+    used = set()
+    for material in bpy.data.materials:
+        layer_stack = getattr(material, "projlayer", None)
+        if layer_stack is None:
+            continue
+        for coll in (layer_stack.color_layers, layer_stack.normal_layers):
+            for layer in coll:
+                for image in (layer.source_image, layer.mask_image):
+                    if image is not None:
+                        used.add(image.as_pointer())
+    return used
+
+
+def purge_unused_images(context):
+    """Delete addon-generated images no layer refers to any more.
+
+    Only images the addon named itself are eligible, so a texture the artist
+    loaded by hand can never be deleted by mistake. A texture still referenced
+    from a material node tree is kept even if no layer points at it.
+    """
+    used = images_in_use()
+
+    # Anything wired into a shader is in use, whatever the layer stack thinks.
+    for material in bpy.data.materials:
+        tree = material.node_tree if material.use_nodes else None
+        if tree is None:
+            continue
+        for node in tree.nodes:
+            image = getattr(node, "image", None)
+            if image is not None:
+                used.add(image.as_pointer())
+
+    removed = 0
+    for image in list(bpy.data.images):
+        if image.as_pointer() in used:
+            continue
+        if not image.name.startswith(("PL_", "PJZ_")):
+            continue
+        try:
+            image.use_fake_user = False
+            if image.users == 0:
+                bpy.data.images.remove(image)
+                removed += 1
+        except (ReferenceError, RuntimeError):
+            pass
+    return removed
 
 
 def _capture_projection(projection, camera, payload):

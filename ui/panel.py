@@ -290,6 +290,7 @@ class PL_PT_layers(bpy.types.Panel):
         row.operator("projlayer.move_layer", text="", icon="TRIA_UP").direction = "UP"
         row.operator("projlayer.move_layer", text="", icon="TRIA_DOWN").direction = "DOWN"
         row.operator("projlayer.flatten", text="", icon="RENDER_STILL")
+        row.operator("projlayer.purge_images", text="", icon="TRASH")
 
         row = layout.row(align=True)
         row.label(text="Bake", icon="IMAGE_DATA")
