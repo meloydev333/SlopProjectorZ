@@ -950,7 +950,19 @@ def _occlusion_socket(nodes, links, camera, geom, x, y):
     return visible.outputs[0]
 
 
+#: The Raycast node landed in Blender 4.2. Occlusion needs it; everything else
+#: works without. Checked once rather than per call.
+HAS_RAYCAST = hasattr(bpy.types, "ShaderNodeRaycast")
+
+
 def render_visibility(context, obj, camera, width, height, filepath):
+    if not hasattr(bpy.types, "ShaderNodeRaycast"):
+        # Blender 4.1 has no Raycast node (added in 4.2). Masks are pure white
+        # now, so a uniform image is the honest equivalent of "nothing is
+        # occluded" instead of a hard crash.
+        save_gray(np.ones((height, width), dtype=np.float32), filepath)
+        return filepath
+
     """Binary occlusion mask, in screen space.
 
     Because the layer's projection UV is screen space, this renders straight
@@ -977,6 +989,10 @@ def render_visibility(context, obj, camera, width, height, filepath):
 
 
 def render_coverage(context, obj, camera, width, height, filepath, layers):
+    if not HAS_RAYCAST:
+        # No Raycast node, so "already painted" cannot be measured against this
+        # camera. The caller skips the inpaint mask rather than getting a wrong one.
+        return None
     """How much of this view is already painted, in this camera's screen space.
 
     Each existing layer's mask is read through *its own* projection UV, so the

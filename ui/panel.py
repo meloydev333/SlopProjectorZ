@@ -1,4 +1,4 @@
-﻿"""The sidebar UI.
+"""The sidebar UI.
 
 Deliberately small: two panels. Generate does camera, prompt and the button.
 Layers holds the Color/Normal switch and the stack, where every layer carries
@@ -286,6 +286,9 @@ class PL_PT_layers(bpy.types.Panel):
 
         row = layout.row(align=True)
         row.operator("projlayer.add_layer", icon="ADD")
+        # Import sits with "add" because it creates a layer rather than acting
+        # on one; export lives on the layer itself, further down.
+        row.operator("projlayer.import_image", text="", icon="IMPORT")
         row.operator("projlayer.duplicate_layer", text="", icon="DUPLICATE")
         row.operator("projlayer.move_layer", text="", icon="TRIA_UP").direction = "UP"
         row.operator("projlayer.move_layer", text="", icon="TRIA_DOWN").direction = "DOWN"
@@ -352,6 +355,8 @@ def _draw_layer_entry(layout, context, layer, index, is_active):
     )
     cam = header.operator("projlayer.focus_projection", text="", icon="CAMERA_DATA")
     cam.index = index
+    save = header.operator("projlayer.export_layer", text="", icon="EXPORT")
+    save.index = index
     remove = header.operator("projlayer.remove_layer", text="", icon="X")
     remove.index = index
 
@@ -371,24 +376,33 @@ def _draw_layer_entry(layout, context, layer, index, is_active):
         body.prop(layer, "saturation", text="Sat", slider=True)
         body.prop(layer, "value", text="Val", slider=True)
 
-    # â”€â”€ projection: how the mask is generated, then the two apply buttons â”€â”€â”€â”€
+    # -- projection: how the mask is generated, then the two apply buttons --
     row = body.row(align=True)
     row.prop(layer.projection, "feather_px", text="Sft", slider=True)
-    row.operator("projlayer.feather_mask", text="", icon="MOD_SMOOTH")
-    row.operator("projlayer.reproject", text="", icon="FILE_REFRESH")
+    op = row.operator("projlayer.feather_mask", text="", icon="MOD_SMOOTH")
+    op.index = index
+    op = row.operator("projlayer.reproject", text="", icon="FILE_REFRESH")
+    op.index = index
     row = body.row(align=True)
     row.prop(layer.projection, "angle_cut", text="Ang", slider=True)
     row.prop(layer.projection, "max_distance", text="Max", slider=True)
 
-    # â”€â”€ paint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # -- paint (every button targets THIS row, not the active layer) --
     row = body.row(align=True)
     row.scale_y = 1.2
-    row.operator("projlayer.paint_color",
-                 text="Normal" if is_normal else "Color", icon="BRUSH_DATA")
-    row.operator("projlayer.paint_mask", text="Mask", icon="MOD_MASK")
-    row.operator("projlayer.invert_mask", text="", icon="IMAGE_ALPHA")
-    row.operator("projlayer.fill_mask", text="", icon="CHECKBOX_HLT").value = 1.0
-    row.operator("projlayer.fill_mask", text="", icon="CHECKBOX_DEHLT").value = 0.0
+    op = row.operator("projlayer.paint_color",
+                      text="Normal" if is_normal else "Color", icon="BRUSH_DATA")
+    op.index = index
+    op = row.operator("projlayer.paint_mask", text="Mask", icon="MOD_MASK")
+    op.index = index
+    op = row.operator("projlayer.invert_mask", text="", icon="IMAGE_ALPHA")
+    op.index = index
+    op = row.operator("projlayer.fill_mask", text="", icon="CHECKBOX_HLT")
+    op.value = 1.0
+    op.index = index
+    op = row.operator("projlayer.fill_mask", text="", icon="CHECKBOX_DEHLT")
+    op.value = 0.0
+    op.index = index
 
 
 # â”€â”€ registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

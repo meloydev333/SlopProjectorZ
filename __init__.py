@@ -1,4 +1,4 @@
-"""Projection Layers — an artist-facing AI projection texturing addon.
+﻿"""Projection Layers â€” an artist-facing AI projection texturing addon.
 
 Workflow: frame your mesh with the camera, type a prompt, hit Generate. The
 viewport render goes to ComfyUI along with depth and normal guide maps, the
@@ -17,7 +17,7 @@ bl_info = {
     "name": "Projection Layers",
     "author": "ProjLayers",
     "version": (0, 1, 0),
-    "blender": (5, 1, 0),
+    "blender": (4, 1, 0),
     "location": "View3D > Sidebar > Proj Layers",
     "description": "Generate textures with ComfyUI and project them as paintable layers",
     "category": "Paint",
