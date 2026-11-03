@@ -1,4 +1,4 @@
-﻿"""Capturing the maps that go to ComfyUI, and snapshotting the projection.
+"""Capturing the maps that go to ComfyUI, and snapshotting the projection.
 
 Everything the backend receives is a plain render:
 
@@ -218,18 +218,25 @@ def attribute_to_paint_uv(obj, attr_name, uv_name=PAINT_UV_NAME):
     return uv_name
 
 
-def snapshot_projection(context, obj, camera, attr_name=None):
+def snapshot_projection(context, obj, camera, attr_name=None, copy_data=False):
     """Freeze the camera projection of ``obj`` into a corner attribute.
 
     Uses a UV_PROJECT modifier with the camera as projector on a scratch UV
     layer, then moves the result into an attribute and deletes the scratch layer
     so the mesh's UV slot count is unchanged.
+
+    A projection is per-mesh, so a mesh whose data is shared with other objects
+    cannot hold its own. ``copy_data`` makes that object single-user instead of
+    failing: a linked duplicate sitting somewhere else projects differently, so
+    it needs its own mesh data to be projected at all.
     """
     if obj.data.users > 1:
-        raise RuntimeError(
-            f"'{obj.name}' shares its mesh data with another object. "
-            "Make it single-user (Object > Relations > Make Single User) first."
-        )
+        if not copy_data:
+            raise RuntimeError(
+                f"'{obj.name}' shares its mesh data with another object. "
+                "Make it single-user (Object > Relations > Make Single User) first."
+            )
+        obj.data = obj.data.copy()
 
     attr_name = attr_name or _next_attr_name(obj)
     scratch = obj.data.uv_layers.get(TEMP_UV_NAME)
@@ -1544,6 +1551,64 @@ def render_image_through_camera(context, obj, camera, image, uv_name,
                 return _render_to_file(context, filepath)
 
 
+def render_procedural_mask(context, obj, camera, layer, width, height, filepath):
+    """Render a shader-generated pre-mask from the camera, in screen space.
+
+    A procedural source has no image to upload, so the same node chain that
+    drives the realtime red preview is rendered once here. The *preview* stays
+    realtime; only this upload costs a render.
+
+    The chain is built for the scene's engine and rendered in that same engine,
+    so the uploaded mask matches the preview. Building it for one engine and
+    rendering in the other would quietly disagree - the Cycles edge chain uses a
+    Bevel node that EEVEE cannot evaluate, and EEVEE's cavity chain is the only
+    one EEVEE can.
+    """
+    # nodes imports render at module level, so this one has to be lazy.
+    from . import nodes as node_builder
+
+    engine = node_builder.current_engine()
+    mat, emis = _emission_material("PL_procedural_mask")
+    tree = mat.node_tree
+    socket = node_builder.build_mask_source(
+        tree.nodes, tree.links, layer, "PL_pmask", -900, 0, engine=engine)
+    if socket is None:
+        return None
+
+    combine = _new_node(tree.nodes, "ShaderNodeCombineXYZ", 200, 0)
+    for index in range(3):
+        tree.links.new(socket, combine.inputs[index])
+    tree.links.new(combine.outputs["Vector"], emis.inputs["Color"])
+
+    with _RenderState(context) as state:
+        state.apply(width, height, camera)
+        scene = context.scene
+        saved_samples = scene.cycles.samples
+        try:
+            if node_builder.is_cycles_engine(engine):
+                _configure_cycles(context)
+                # Bevel normals come out less faceted with a few samples than
+                # with the single sample the other passes use.
+                scene.cycles.samples = 8
+            else:
+                # Legacy EEVEE only computes AO with GTAO on, and the render
+                # below is the first thing to read it - rebuild() normally
+                # handles this, but a mask rendered without a rebuild would
+                # come out black.
+                eevee = getattr(scene, "eevee", None)
+                if (eevee is not None and hasattr(eevee, "use_gtao")
+                        and not eevee.use_gtao):
+                    eevee.use_gtao = True
+                # EEVEE, not Cycles: ambient occlusion there is screen-space and
+                # smooth, where a low-sample Cycles AO pass would be noisy.
+                _configure_emission_engine(context, samples=16)
+            with _TempWorld(context, BLACK_WORLD):
+                with _TempMaterial(obj, mat):
+                    return _render_to_file(context, filepath)
+        finally:
+            scene.cycles.samples = saved_samples
+
+
 def _configure_emission_engine(context, samples=8):
     """EEVEE is plenty for a flat emission pass and much faster than Cycles."""
     scene = context.scene
@@ -1638,6 +1703,62 @@ def resize_nearest(array, size):
     return array[ys][:, xs]
 
 
+def pack_image(image, force=False):
+    """Pack an image, safely, and only when there is something to pack.
+
+    ``Image.pack()`` is NOT idempotent on Blender 4.1. Packing an image that is
+    already packed, unchanged, and has an empty filepath FREES the existing
+    packed data and then packs nothing: the image is left as
+    ``source='FILE'`` with ``packed_file=None`` and no pixels, so Blender does
+    not write the datablock into the .blend at all and the next load has no such
+    image. That is why masks went missing from saved files entirely rather than
+    merely coming back stale - ``apply`` packed each mask once while writing its
+    pixels and once more afterwards, when it was already clean, wiping it.
+
+    Packing does work when there are unpacked pixels, which is also the only way
+    to persist a brush stroke: Blender keeps the bytes the image was packed with
+    and drops the live buffer when the file is written.
+
+    ``force`` re-packs an already packed image anyway, by writing the live buffer
+    to a temporary PNG and packing that file. That is the only re-pack route that
+    is safe for an image that already has packed data, and it is the one thing
+    that cannot be fooled by a stale dirty flag.
+
+    Returns True when the image is packed afterwards.
+    """
+    if image is None:
+        return False
+    try:
+        if not force and image.packed_file is not None and not image.is_dirty:
+            return True
+
+        if force and image.packed_file is not None:
+            path = temp_path(f"repack_{image.name}.png")
+            image.filepath_raw = path
+            image.file_format = "PNG"
+            image.save()
+            image.pack()
+        else:
+            image.pack()
+
+        image.use_fake_user = True
+        try:
+            if "pl_needs_pack" in image:
+                del image["pl_needs_pack"]
+        except (TypeError, AttributeError):
+            pass
+        if image.packed_file is None:
+            print("[Projection Layers] packing '%s' produced no data"
+                  % image.name)
+        return image.packed_file is not None
+    except (RuntimeError, OSError) as exc:
+        print("[Projection Layers] could not pack '%s': %s" % (image.name, exc))
+        return False
+    except TypeError as exc:
+        print("[Projection Layers] could not pack '%s': %s" % (image.name, exc))
+        return False
+
+
 def write_rgb(image, array):
     """Write a float32 (H, W, 3) array into a Blender image."""
     height, width = array.shape[:2]
@@ -1646,7 +1767,7 @@ def write_rgb(image, array):
     buffer[:, :, 3] = 1.0
     image.pixels.foreach_set(buffer.ravel())
     image.update()
-    image.pack()
+    pack_image(image)
 
 
 def save_image_as_png(image, path):

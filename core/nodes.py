@@ -1,16 +1,16 @@
-﻿"""Builds the layer stack into the object's material node tree.
+"""Builds the layer stack into the object's material node tree.
 
 The material tree stays readable no matter how many layers you have: everything
 the add-on builds lives inside a single **mother group** (``PL_Stack``) wired to
 the Principled BSDF, and inside that group each layer is its own small group
-(``PL_LayerColor_0``, ``PL_LayerNormal_0``, â€¦) chained one into the next.
+(``PL_LayerColor_0``, ``PL_LayerNormal_0``, Ă˘â‚¬Â¦) chained one into the next.
 
     material tree            PL_Stack group
-    â”Śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”       â”Śâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-    â”‚ [PL_Stack]â”€â”€â”€â”€â”€â”Ľâ”€â”€Colorâ”¤ BaseColor â†’[L0]â†’[L1]â†’[L2]â”€â”€â”€â”€â”€â”€â†’ Colorâ”‚
-    â”‚      â”‚         â”‚       â”‚                                      â”‚
-    â”‚  Principled    â”‚Normal â”‚ BaseNormalâ†’[N0]â†’[N1]â”€â”€â”€â”€â”€â”€â”€â”€â”€â†’ Normal â”‚
-    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+    Ă˘â€ťĹšĂ˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťÂ       Ă˘â€ťĹšĂ˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťÂ
+    Ă˘â€ťâ€š [PL_Stack]Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťÄ˝Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ColorĂ˘â€ťÂ¤ BaseColor Ă˘â€ â€™[L0]Ă˘â€ â€™[L1]Ă˘â€ â€™[L2]Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ â€™ ColorĂ˘â€ťâ€š
+    Ă˘â€ťâ€š      Ă˘â€ťâ€š         Ă˘â€ťâ€š       Ă˘â€ťâ€š                                      Ă˘â€ťâ€š
+    Ă˘â€ťâ€š  Principled    Ă˘â€ťâ€šNormal Ă˘â€ťâ€š BaseNormalĂ˘â€ â€™[N0]Ă˘â€ â€™[N1]Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ â€™ Normal Ă˘â€ťâ€š
+    Ă˘â€ťâ€ťĂ˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťÂ       Ă˘â€ťâ€ťĂ˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťÂ
 
 Chain order is bottom-to-top: ``color_layers[0]`` is the bottom layer.
 
@@ -46,7 +46,7 @@ FLAT_NORMAL = (0.5, 0.5, 1.0)
 _KEEP_IN_GROUP = {"NodeGroupInput", "NodeGroupOutput"}
 
 
-# â”€â”€ socket helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ socket helpers Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
 
 def _socket(collection, identifier):
     """Look a socket up by identifier (names are ambiguous on ShaderNodeMix)."""
@@ -69,7 +69,7 @@ def _break(links, socket):
         links.remove(link)
 
 
-# â”€â”€ material-tree plumbing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ material-tree plumbing Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
 
 def find_output(material):
     for node in material.node_tree.nodes:
@@ -92,7 +92,7 @@ def clear(material):
     """Remove every node and node group this add-on created.
 
     ``PL_PaintTarget`` is spared on purpose. It is the node Blender paints into,
-    and the debounced rebuild fires shortly *after* entering paint mode â€” wiping
+    and the debounced rebuild fires shortly *after* entering paint mode Ă˘â‚¬â€ť wiping
     it there would silently break painting.
     """
     if material is not None and material.use_nodes and material.node_tree is not None:
@@ -108,9 +108,21 @@ def clear(material):
         for node in doomed:
             material.node_tree.nodes.remove(node)
 
+    # Only this material's own groups. Removing every PL_ group here is what
+    # made rebuilding one material wipe another's stack: the other material's
+    # stack node was left pointing at a deleted datablock (node_tree None), so
+    # its layers stopped rendering until it happened to be rebuilt again.
+    suffix = _group_suffix(material) if material is not None else None
     for group in list(bpy.data.node_groups):
-        if group.name.startswith(PREFIX) and group.library is None:
-            bpy.data.node_groups.remove(group)
+        if not group.name.startswith(PREFIX):
+            continue
+        if group.library is not None:
+            continue
+        if suffix is not None and not group.name.endswith(suffix):
+            continue
+        if group.name == _RNM_GROUP:
+            continue  # shared and stateless, rebuilt on demand
+        bpy.data.node_groups.remove(group)
 
 
 def _remember_original(material, node, socket, marker_name):
@@ -158,7 +170,7 @@ def _ensure_scaffold(material):
     return output, bsdf
 
 
-# â”€â”€ node factories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ node factories Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
 
 def _node(nodes, kind, name, location):
     node = nodes.new(kind)
@@ -192,7 +204,40 @@ def _const_vector(nodes, name, vector, x, y):
     return node
 
 
-# â”€â”€ node groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ node groups Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
+
+def _group_suffix(material):
+    """A stable ASCII suffix identifying one material's groups.
+
+    Node group names are file-global, and the old fixed names meant every
+    material's stack node pointed at the SAME ``PL_Stack`` datablock. Each
+    rebuild then overwrote it, so whichever material rebuilt last defined what
+    every other material displayed - layers appeared to drift between objects
+    and some meshes went flat.
+    """
+    name = getattr(material, "name", "") or "material"
+    safe = "".join(c if (c.isalnum() or c in "_-") else "_" for c in name)
+    return "_" + (safe[:48] or "material")
+
+
+def _prune_groups(suffix, keep):
+    """Drop this material's groups that the last rebuild did not use.
+
+    Without it a stack that shrinks from six layers to two leaves four orphan
+    groups behind, which then resurface if the count goes back up.
+    """
+    for group in list(bpy.data.node_groups):
+        if not group.name.startswith(PREFIX):
+            continue
+        if not group.name.endswith(suffix):
+            continue
+        if group.name in keep:
+            continue
+        try:
+            bpy.data.node_groups.remove(group)
+        except (RuntimeError, ReferenceError):
+            pass
+
 
 def _reset_group(name, inputs, outputs):
     """Get (or create) a shader node group and wipe its innards.
@@ -241,22 +286,273 @@ def _group_io(group):
     return gi, go
 
 
-# â”€â”€ per-layer groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ per-layer groups Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
+
+def _analytic_projection_uv(nodes, links, layer, tag, x, y):
+    """Projection UV computed from the layer's stored camera matrix.
+
+    This is the same mapping as :func:`render.project_loops_uv`, which was
+    verified against ``UV_PROJECT`` to 6e-08. Building it in the shader means a
+    layer needs no per-mesh projection attribute at all, so every mesh sharing
+    the material projects correctly - including linked duplicates that Blender
+    would never let us stamp.
+
+    Returns the UV socket, or None when no camera matrix was ever captured.
+    """
+    projection = layer.projection
+    if not render.projection_is_valid(projection):
+        return None
+
+    try:
+        world_to_camera = render.matrix_from_projection(projection).inverted_safe()
+        half_x, half_y = render.projection_half_extents(projection)
+        shift_x = float(projection.shift_x)
+        shift_y = float(projection.shift_y)
+    except (AttributeError, TypeError, ValueError):
+        return None
+
+    position = _node(nodes, "ShaderNodeNewGeometry", f"{tag}_ProjPos", (x, y))
+
+    def camera_axis(row_index, name):
+        row = world_to_camera[row_index]
+        dot = _vector_math(nodes, f"{tag}_{name}Dot", "DOT_PRODUCT",
+                           (x + 220, y - row_index * 240))
+        links.new(position.outputs["Position"], dot.inputs[0])
+        dot.inputs[1].default_value = (row[0], row[1], row[2])
+        add = _math(nodes, f"{tag}_{name}W", "ADD", (x + 420, y - row_index * 240))
+        links.new(dot.outputs["Value"], add.inputs[0])
+        add.inputs[1].default_value = row[3]
+        return add.outputs[0]
+
+    camera_x = camera_axis(0, "CamX")
+    camera_y = camera_axis(1, "CamY")
+    camera_z = camera_axis(2, "CamZ")
+
+    # The camera looks down -Z, so depth in front of it is -z.
+    depth = _math(nodes, f"{tag}_Depth", "MULTIPLY", (x + 640, y - 240))
+    links.new(camera_z, depth.inputs[0])
+    depth.inputs[1].default_value = -1.0
+
+    def to_uv(component, half, shift, name, row):
+        over = _math(nodes, f"{tag}_{name}OverZ", "DIVIDE",
+                     (x + 840, y - row * 240))
+        links.new(component, over.inputs[0])
+        links.new(depth.outputs[0], over.inputs[1])
+        scale = _math(nodes, f"{tag}_{name}Scale", "MULTIPLY",
+                      (x + 1040, y - row * 240))
+        links.new(over.outputs[0], scale.inputs[0])
+        scale.inputs[1].default_value = 1.0 / (2.0 * max(half, 1e-6))
+        offset = _math(nodes, f"{tag}_{name}Offset", "ADD",
+                       (x + 1240, y - row * 240))
+        links.new(scale.outputs[0], offset.inputs[0])
+        offset.inputs[1].default_value = 0.5 + shift
+        return offset.outputs[0]
+
+    u = to_uv(camera_x, half_x, shift_x, "U", 0)
+    v = to_uv(camera_y, half_y, shift_y, "V", 1)
+
+    combine = _node(nodes, "ShaderNodeCombineXYZ", f"{tag}_ProjUV", (x + 1460, y))
+    links.new(u, combine.inputs[0])
+    links.new(v, combine.inputs[1])
+    combine.inputs[2].default_value = 0.0
+    return combine.outputs[0]
+
 
 def _uv_source(nodes, links, layer, tag, x, y):
     """Where this layer's textures get their coordinates from.
 
-    Paint layers read one of the mesh's own UV maps; projected layers read the
-    camera projection stored in a corner attribute.
+    Paint layers read one of the mesh's own UV maps. Projected layers compute the
+    camera projection from their stored matrix - there is no per-mesh projection
+    attribute at all any more, which is what lets every mesh sharing a material
+    project correctly with no stamping and no single-user copies.
     """
     if props.is_paint_layer(layer):
         node = _node(nodes, "ShaderNodeUVMap", f"{tag}_UV", (x, y))
         node.uv_map = layer.uv_map
         return node.outputs["UV"]
-    node = _node(nodes, "ShaderNodeAttribute", f"{tag}_UV", (x, y))
-    node.attribute_type = "GEOMETRY"
-    node.attribute_name = layer.uv_attr
-    return node.outputs["Vector"]
+
+    socket = _analytic_projection_uv(nodes, links, layer, tag, x, y)
+    if socket is not None:
+        return socket
+
+    # No camera matrix was ever captured for this layer. Sampling outside 0..1
+    # makes the CLIP-extended texture return nothing, so the layer simply does
+    # not project instead of painting one texel flat across the mesh.
+    off = _const_vector(nodes, f"{tag}_NoProjection", (2.0, 2.0, 0.0), x, y)
+    return off.outputs[0]
+
+
+def mask_is_procedural(layer) -> bool:
+    """True when this layer's mask is computed in the shader, not painted."""
+    return getattr(layer, "mask_source", "PAINTED") != "PAINTED"
+
+
+#: Object-space axes the FACING filter can point along.
+MASK_AXES = {
+    "POS_X": (1.0, 0.0, 0.0),
+    "NEG_X": (-1.0, 0.0, 0.0),
+    "POS_Y": (0.0, 1.0, 0.0),
+    "NEG_Y": (0.0, -1.0, 0.0),
+    "POS_Z": (0.0, 0.0, 1.0),
+    "NEG_Z": (0.0, 0.0, -1.0),
+}
+
+
+def current_engine() -> str:
+    """The scene's render engine, or '' when there is no scene yet."""
+    try:
+        return str(bpy.context.scene.render.engine)
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def is_cycles_engine(engine=None) -> bool:
+    return "CYCLES" in str(engine or current_engine()).upper()
+
+
+def mask_source_label(layer) -> str:
+    """Short name of the active mask source, for the sidebar."""
+    kind = getattr(layer, "mask_source", "PAINTED") if layer is not None else "PAINTED"
+    if kind == "AO":
+        return "Ambient Occlusion"
+    if kind == "EDGE":
+        # Say which one it really is: Cycles finds true edges, EEVEE can only
+        # find concave cavities.
+        return "Edges (Cycles)" if is_cycles_engine() else "Cavity (EEVEE)"
+    if kind == "FACING":
+        return "Facing"
+    return "Painted"
+
+
+def build_mask_source(nodes, links, layer, tag, x, y, engine=None):
+    """Node-generated mask for one layer, as a float socket (or None).
+
+    None of these need UVs, so they evaluate per fragment and stay realtime in
+    the viewport.
+
+    Engine caveats, all measured rather than assumed:
+
+    * Ambient occlusion is screen-space in legacy EEVEE and only produces
+      anything when ``scene.eevee.use_gtao`` is on. With GTAO off the AO node
+      returns 1.0 everywhere, so anything derived from ``1 - AO`` is pure black -
+      which is exactly why the edge mask looked empty.
+    * Legacy EEVEE also IGNORES the AO node's own Distance input; every value
+      from 0.05 to 1.0 rendered identically. Only the cavity signal itself is
+      usable there, so the Distance slider is a Cycles-side control.
+    * ``inside=True`` (thickness) reads as "no occlusion" on legacy EEVEE, so it
+      cannot be used to find cavities. EEVEE therefore inverts ordinary AO and
+      applies a gain, because the raw cavity signal peaks around 0.3.
+    * True convex edges need the Bevel node, which is Cycles-only.
+    """
+    kind = getattr(layer, "mask_source", "PAINTED")
+    if kind not in {"AO", "EDGE", "FACING"}:
+        return None
+    engine = engine or current_engine()
+
+    if kind in {"AO", "EDGE"}:
+        ao = _node(nodes, "ShaderNodeAmbientOcclusion", f"{tag}_AO", (x, y))
+        if "Distance" in ao.inputs:
+            ao.inputs["Distance"].default_value = float(layer.mask_distance)
+        # Only this object occludes itself, so a neighbouring prop in a batch
+        # cannot darken the mask.
+        ao.only_local = True
+        bw = _node(nodes, "ShaderNodeRGBToBW", f"{tag}_AOBW", (x + 220, y))
+        links.new(ao.outputs["AO"], bw.inputs["Color"])
+        source = bw.outputs["Val"]
+
+        if kind == "EDGE":
+            if is_cycles_engine(engine):
+                # Bevel bends the shading normal near geometry corners, so
+                # 1 - dot(bevel normal, real normal) lights up convex AND
+                # concave edges. This is the only real edge detector Blender
+                # exposes to a shader.
+                bevel = _node(nodes, "ShaderNodeBevel", f"{tag}_Bevel", (x, y + 260))
+                bevel.samples = 4
+                radius = max(1e-4, float(layer.mask_distance) * 0.25)
+                if "Radius" in bevel.inputs:
+                    bevel.inputs["Radius"].default_value = radius
+                geom = _node(nodes, "ShaderNodeNewGeometry", f"{tag}_BevelGeo",
+                             (x + 160, y + 260))
+                dot = _node(nodes, "ShaderNodeVectorMath", f"{tag}_BevelDot",
+                            (x + 330, y + 260))
+                dot.operation = "DOT_PRODUCT"
+                links.new(bevel.outputs["Normal"], dot.inputs[0])
+                links.new(geom.outputs["Normal"], dot.inputs[1])
+                invert = _math(nodes, f"{tag}_EdgeInv", "SUBTRACT", (x + 500, y),
+                               {0: 1.0})
+                links.new(dot.outputs["Value"], invert.inputs[1])
+                gain = _node(nodes, "ShaderNodeMapRange", f"{tag}_EdgeGain",
+                             (x + 660, y))
+                gain.clamp = True
+                gain.inputs["From Min"].default_value = 0.0
+                gain.inputs["From Max"].default_value = 0.35
+                gain.inputs["To Min"].default_value = 0.0
+                gain.inputs["To Max"].default_value = 1.0
+                links.new(invert.outputs[0], gain.inputs["Value"])
+                source = gain.outputs["Result"]
+            else:
+                # EEVEE: ordinary AO inverted. The cavity signal is genuinely
+                # faint (measured peak ~0.3 on a torus), so stretch it; without
+                # this the mask reads as black even when it is working.
+                invert = _math(nodes, f"{tag}_EdgeInv", "SUBTRACT", (x + 400, y),
+                               {0: 1.0})
+                links.new(source, invert.inputs[1])
+                gain = _node(nodes, "ShaderNodeMapRange", f"{tag}_EdgeGain",
+                             (x + 560, y))
+                gain.clamp = True
+                gain.inputs["From Min"].default_value = 0.0
+                # The raw cavity peaks around 0.3 in legacy EEVEE, so a 0.45
+                # window left every edge at half brightness. 0.25 reaches white
+                # on real creases while staying black on flat surfaces.
+                gain.inputs["From Max"].default_value = 0.25
+                gain.inputs["To Min"].default_value = 0.0
+                gain.inputs["To Max"].default_value = 1.0
+                links.new(invert.outputs[0], gain.inputs["Value"])
+                source = gain.outputs["Result"]
+    else:
+        # Object space, NOT view space: the mask must depend on how the surface
+        # is oriented in the object, not on where the camera happens to be.
+        # Orbiting the viewport or moving the camera leaves it unchanged, and
+        # rotating the object rotates the filter with it.
+        geom = _node(nodes, "ShaderNodeNewGeometry", f"{tag}_FacingGeo", (x, y))
+        to_object = _node(nodes, "ShaderNodeVectorTransform",
+                          f"{tag}_FacingObj", (x + 170, y))
+        to_object.vector_type = "NORMAL"
+        to_object.convert_from = "WORLD"
+        to_object.convert_to = "OBJECT"
+        links.new(geom.outputs["Normal"], to_object.inputs["Vector"])
+
+        dot = _node(nodes, "ShaderNodeVectorMath", f"{tag}_FacingDot",
+                    (x + 340, y))
+        dot.operation = "DOT_PRODUCT"
+        links.new(to_object.outputs["Vector"], dot.inputs[0])
+        axis = MASK_AXES.get(getattr(layer, "mask_axis", "POS_Z"), (0.0, 0.0, 1.0))
+        dot.inputs[1].default_value = axis
+
+        limit = float(np.cos(np.radians(max(0.0, min(90.0, layer.mask_angle)))))
+        remap = _node(nodes, "ShaderNodeMapRange", f"{tag}_FacingMap",
+                      (x + 510, y))
+        remap.clamp = True
+        remap.inputs["From Min"].default_value = limit
+        remap.inputs["From Max"].default_value = 1.0
+        remap.inputs["To Min"].default_value = 0.0
+        remap.inputs["To Max"].default_value = 1.0
+        links.new(dot.outputs["Value"], remap.inputs["Value"])
+        source = remap.outputs["Result"]
+
+    # Invert and contrast are shared by every source, so they behave the same
+    # whichever one is chosen.
+    if getattr(layer, "mask_invert", False):
+        flip = _math(nodes, f"{tag}_MaskInv", "SUBTRACT", (x + 620, y), {0: 1.0})
+        links.new(source, flip.inputs[1])
+        source = flip.outputs[0]
+
+    contrast = float(getattr(layer, "mask_contrast", 1.0) or 1.0)
+    if abs(contrast - 1.0) > 1e-4:
+        curve = _math(nodes, f"{tag}_MaskContrast", "POWER", (x + 800, y), {1: contrast})
+        links.new(source, curve.inputs[0])
+        source = curve.outputs[0]
+    return source
 
 
 def _mask_socket(nodes, links, layer, tag, x_base, y, uv_socket):
@@ -266,7 +562,19 @@ def _mask_socket(nodes, links, layer, tag, x_base, y, uv_socket):
     the mask image, so they respond instantly and the mask itself stays a clean
     black-and-white occlusion map.
     """
-    if layer.mask_image is None:
+    procedural = None
+    if mask_is_procedural(layer):
+        procedural = build_mask_source(nodes, links, layer, tag,
+                                       x_base + 200, y - 260)
+
+    if procedural is not None:
+        # Same opacity multiply as the painted path, so the red preview and the
+        # applied mask stay in agreement.
+        scale = _math(nodes, f"{tag}_MaskOpacity", "MULTIPLY",
+                      (x_base + 1000, y - 260), {1: layer.opacity})
+        links.new(procedural, scale.inputs[0])
+        source_socket = scale.outputs[0]
+    elif layer.mask_image is None:
         source = _node(nodes, "ShaderNodeValue", f"{tag}_Opacity", (x_base + 400, y - 260))
         source.outputs[0].default_value = layer.opacity
         source_socket = source.outputs[0]
@@ -705,26 +1013,29 @@ def _rnm_group():
     return group
 
 
-# â”€â”€ the mother group â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ the mother group Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
 
-def _build_stack(group, color_layers, normal_layers, normal_blend):
+def _build_stack(group, color_layers, normal_layers, normal_blend, suffix=""):
     nodes, links = group.nodes, group.links
     gi, go = _group_io(group)
+    used = set()
 
-    # â”€â”€ colour chain, bottom to top â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ colour chain, bottom to top Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
     # The pre-mask is a working overlay, not part of the artwork, so it is
-    # always composited last â€” otherwise every new projection would land on top
+    # always composited last Ă˘â‚¬â€ť otherwise every new projection would land on top
     # of it and hide the red you are painting with.
     ordered = [l for l in color_layers if l.role == "LAYER"]
     ordered += [l for l in color_layers if l.role != "LAYER"]
 
     cursor = gi.outputs["Base Color"]
     for index, layer in enumerate(ordered):
+        layer_name = f"{COLOR_LAYER_GROUP}_{index}{suffix}"
         layer_group = _reset_group(
-            f"{COLOR_LAYER_GROUP}_{index}",
+            layer_name,
             [("Below", "NodeSocketColor")],
             [("Color", "NodeSocketColor")],
         )
+        used.add(layer_name)
         _build_color_layer_group(layer_group, layer, index)
         node = _node(nodes, "ShaderNodeGroup", f"{PREFIX}LayerC{index:02d}",
                      (-800, 200 - index * 300))
@@ -734,14 +1045,16 @@ def _build_stack(group, color_layers, normal_layers, normal_blend):
         cursor = node.outputs["Color"]
     links.new(cursor, go.inputs["Color"])
 
-    # â”€â”€ normal chain, bottom to top â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ normal chain, bottom to top Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
     cursor = gi.outputs["Base Normal"]
     for index, layer in enumerate(normal_layers):
+        normal_name = f"{NORMAL_LAYER_GROUP}_{index}{suffix}"
         layer_group = _reset_group(
-            f"{NORMAL_LAYER_GROUP}_{index}",
+            normal_name,
             [("Below", "NodeSocketVector")],
             [("Normal", "NodeSocketVector")],
         )
+        used.add(normal_name)
         _build_normal_layer_group(layer_group, layer, index, normal_blend)
         node = _node(nodes, "ShaderNodeGroup", f"{PREFIX}LayerN{index:02d}",
                      (400, 200 - index * 300))
@@ -750,9 +1063,10 @@ def _build_stack(group, color_layers, normal_layers, normal_blend):
         links.new(cursor, node.inputs["Below"])
         cursor = node.outputs["Normal"]
     links.new(cursor, go.inputs["Normal"])
+    return used
 
 
-# â”€â”€ entry point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬ entry point Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬Ă˘â€ťâ‚¬
 
 def rebuild(material, color_layers, normal_layers, normal_blend="WHITEOUT"):
     """Rebuild the whole add-on contribution into ``material``.
@@ -789,14 +1103,20 @@ def rebuild(material, color_layers, normal_layers, normal_blend="WHITEOUT"):
         _break(links, bsdf.inputs["Normal"])
         if original_normal is not None:
             links.new(original_normal, bsdf.inputs["Normal"])
+        # Deliberately no prune here: the stack node may still point at these
+        # groups, and removing them leaves node_tree None on a live node.
         return
 
+    suffix = _group_suffix(material)
+    stack_name = f"{STACK_GROUP}{suffix}"
     stack = _reset_group(
-        STACK_GROUP,
+        stack_name,
         [("Base Color", "NodeSocketColor"), ("Base Normal", "NodeSocketVector")],
         [("Color", "NodeSocketColor"), ("Normal", "NodeSocketVector")],
     )
-    _build_stack(stack, color_layers, normal_layers, normal_blend)
+    used = _build_stack(stack, color_layers, normal_layers, normal_blend, suffix)
+    used.add(stack_name)
+    _prune_groups(suffix, used)
 
     node = _node(nodes, "ShaderNodeGroup", f"{PREFIX}StackNode", (-600, 0))
     node.node_tree = stack

@@ -1,4 +1,4 @@
-﻿"""Property groups â€” the addon's data model.
+"""Property groups â€” the addon's data model.
 
 Layer stacks live on Materials, one stack per material, so two objects with
 different materials keep independent layers. Everything else (prompt, guides,
@@ -27,6 +27,28 @@ ROLE_ITEMS = [
     ("LAYER", "Layer", "An ordinary projected layer"),
     ("PREMASK", "Pre-mask", "Painted before generating; becomes the new layer's mask"),
     ("PREPAINT", "Pre-paint", "Painted before generating; sent as the reference and removed afterwards"),
+]
+
+#: Where a layer's mask comes from. The procedural ones are evaluated in the
+#: shader, so the red preview follows the viewport with nothing to bake.
+MASK_SOURCE_ITEMS = [
+    ("PAINTED", "Painted", "Use the painted mask image"),
+    ("AO", "Ambient Occlusion", "Cavity shading computed in the shader"),
+    ("EDGE", "Edges",
+     "Cavity in EEVEE, true convex and concave edges on Cycles"),
+    ("FACING", "Facing",
+     "Faces pointing along a chosen object-space direction"),
+]
+
+#: Object-space directions the FACING mask can point along. Object space, not
+#: view space, so the mask does not change as the camera moves.
+MASK_AXIS_ITEMS = [
+    ("POS_X", "+X", "Faces pointing along object +X"),
+    ("NEG_X", "-X", "Faces pointing along object -X"),
+    ("POS_Y", "+Y", "Faces pointing along object +Y"),
+    ("NEG_Y", "-Y", "Faces pointing along object -Y"),
+    ("POS_Z", "+Z", "Faces pointing along object +Z (usually up)"),
+    ("NEG_Z", "-Z", "Faces pointing along object -Z"),
 ]
 
 BLEND_ITEMS = [
@@ -253,6 +275,42 @@ class PL_Layer(bpy.types.PropertyGroup):
     #: object's own UV space (not the camera projection) so they can be painted
     #: from any angle with the ordinary texture tools.
     mask_uv: StringProperty(name="Mask UV", default="", update=_on_layer_change)
+
+    #: Where this layer's mask comes from. PAINTED keeps the hand-painted mask
+    #: image; the others are computed live in the shader so the red overlay
+    #: updates as the viewport moves, with nothing to bake or refresh.
+    mask_source: EnumProperty(
+        name="Mask Source", items=MASK_SOURCE_ITEMS, default="PAINTED",
+        update=_on_layer_change,
+        description="Where this layer's mask comes from",
+    )
+    mask_distance: FloatProperty(
+        name="Distance", default=0.2, min=0.001, max=10.0,
+        update=_on_layer_change,
+        description="How far the occlusion rays reach, so how tight the result is",
+    )
+    mask_angle: FloatProperty(
+        name="Angle", default=60.0, min=0.0, max=90.0, subtype="ANGLE",
+        update=_on_layer_change,
+        description="Surfaces turned further than this from the chosen axis are excluded",
+    )
+    mask_axis: EnumProperty(
+        name="Direction", items=MASK_AXIS_ITEMS, default="POS_Z",
+        update=_on_layer_change,
+        description=(
+            "Object-space direction the Facing mask points along. Object space "
+            "means orbiting the camera does not change the mask"
+        ),
+    )
+    mask_contrast: FloatProperty(
+        name="Contrast", default=1.0, min=0.05, max=8.0,
+        update=_on_layer_change,
+        description="Pushes the mask toward black and white",
+    )
+    mask_invert: BoolProperty(
+        name="Invert", default=False, update=_on_layer_change,
+        description="Flip the mask",
+    )
 
     #: Object pass index this layer is confined to; 0 means every object sharing
     #: the material (the default, which lets a projection bleed).
@@ -686,22 +744,34 @@ def _sync_material_slot(context):
         conf.material_slot = wanted
 
 
+_last_mode = ""
+
+
 def _watch_paint_mode():
     """Disarm the pre-mask / pre-paint modes when the artist leaves painting.
 
     Wrapped whole: an exception escaping a timer makes Blender *unregister* it,
     so a single bad tick would silently disable this for the rest of the
-    session â€” which is exactly what happened before.
+    session - which is exactly what happened before.
     """
+    global _last_mode
     try:
         if not bpy.app.background:
             context = bpy.context
             conf = getattr(getattr(context, "scene", None), "projlayer", None)
+            mode = getattr(context, "mode", "")
             if conf is not None:
                 _sync_material_slot(context)
                 if conf.premask_on or conf.prepaint_on:
-                    if getattr(context, "mode", "") != "PAINT_TEXTURE":
+                    if mode != "PAINT_TEXTURE":
                         set_pre_modes(context, premask=False, prepaint=False)
+                # Leaving paint mode is the natural moment to commit strokes to
+                # the packed images: it keeps the work safe even if the artist
+                # never saves, and it means the save hook has less to do.
+                if _last_mode == "PAINT_TEXTURE" and mode != "PAINT_TEXTURE":
+                    from .core import pipeline
+                    pipeline.pack_layer_images()
+            _last_mode = mode
     except Exception:  # noqa: BLE001
         pass
     return 0.4
@@ -715,6 +785,19 @@ def start_watcher():
 def stop_watcher():
     if bpy.app.timers.is_registered(_watch_paint_mode):
         bpy.app.timers.unregister(_watch_paint_mode)
+
+
+def _save_pre(*_args):
+    """Commit painted pixels before Blender writes the .blend.
+
+    Wrapped whole: this runs inside the save, and an exception here is worse
+    than a stale mask.
+    """
+    try:
+        from .core import pipeline
+        pipeline.on_save_pre()
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def register():
@@ -732,6 +815,8 @@ def register():
         bpy.app.timers.register(_deferred_prompt_slots, first_interval=0.2)
     if ensure_all_prompt_slots not in bpy.app.handlers.load_post:
         bpy.app.handlers.load_post.append(ensure_all_prompt_slots)
+    if _save_pre not in bpy.app.handlers.save_pre:
+        bpy.app.handlers.save_pre.append(_save_pre)
     start_watcher()
 
 
@@ -741,6 +826,8 @@ def unregister():
         bpy.app.timers.unregister(_deferred_prompt_slots)
     if ensure_all_prompt_slots in bpy.app.handlers.load_post:
         bpy.app.handlers.load_post.remove(ensure_all_prompt_slots)
+    if _save_pre in bpy.app.handlers.save_pre:
+        bpy.app.handlers.save_pre.remove(_save_pre)
     del bpy.types.Scene.projlayer
     del bpy.types.Material.projlayer
     for cls in reversed(CLASSES):
